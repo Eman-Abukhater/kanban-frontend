@@ -50,12 +50,19 @@ export async function authTheUserId(
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        // NOTE: interceptor skips Authorization automatically for this URL
       },
     });
 
-    // if (!response.status) {
-    //   throw new Error("Network response was not ok");
-    // }
+    // 🔑 Save token if backend returns it (try common shapes)
+    const token =
+      (response?.data && (response.data.token || response.data?.data?.token)) ||
+      null;
+    if (token) {
+      localStorage.setItem("token", token); // boss’s #1 option (raw token)
+      // If you prefer the other style boss mentioned:
+      // localStorage.setItem("authToken", `Bearer ${token}`);
+    }
 
     const customResponse: GetListCustomResponse<any> = {
       status: response.status,
@@ -66,9 +73,9 @@ export async function authTheUserId(
   } catch (error: any) {
     console.error("Error fetching data:", error);
     return error;
-    return null; // Or any appropriate error handling
   }
 }
+
 
 // useOnDragEnd
 export async function updateBoards(boards: any): Promise<Response> {
