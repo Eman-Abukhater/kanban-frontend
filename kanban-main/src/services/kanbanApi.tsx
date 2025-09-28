@@ -2,6 +2,30 @@ import axios from "axios";
 import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
 
 const Base_URL: string = "https://kanban-backend-final.onrender.com/api";
+axios.interceptors.request.use(
+  (config) => {
+    const url = (config.url ?? "").toString();
+    const isAuthUser = url.includes("/ProjKanbanBoards/authuser"); // skip token for first auth
+
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+    // default headers
+    config.headers = config.headers ?? {};
+    (config.headers as any).Accept = "application/json";
+    if (!(config.headers as any)["Content-Type"]) {
+      (config.headers as any)["Content-Type"] = "application/json";
+    }
+
+    // add Authorization unless it's the authuser call
+    if (!isAuthUser && token) {
+      (config.headers as any).Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Define a custom response type
 interface GetListCustomResponse<T> {
