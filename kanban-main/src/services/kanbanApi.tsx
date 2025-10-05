@@ -4,28 +4,21 @@ import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
 const Base_URL: string = "https://kanban-backend-final.onrender.com/api";
 axios.interceptors.request.use(
   (config) => {
-    const url = (config.url ?? "").toString();
-    const isAuthUser = url.includes("/ProjKanbanBoards/authuser"); // skip token for first auth
-
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-    // default headers
-    config.headers = config.headers ?? {};
-    (config.headers as any).Accept = "application/json";
-    if (!(config.headers as any)["Content-Type"]) {
-      (config.headers as any)["Content-Type"] = "application/json";
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-
-    // add Authorization unless it's the authuser call
-    if (!isAuthUser && token) {
-      (config.headers as any).Authorization = `Bearer ${token}`;
-    }
-
     return config;
   },
   (error) => Promise.reject(error)
 );
+function authHeaders(isFormData = false) {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const h: Record<string, string> = { Accept: "application/json" };
+  if (!isFormData) h["Content-Type"] = "application/json";
+  if (token) h["Authorization"] = `Bearer ${token}`;
+  return h;
+}
 
 // Define a custom response type
 interface GetListCustomResponse<T> {
@@ -81,9 +74,7 @@ export async function authTheUserId(
 export async function updateBoards(boards: any): Promise<Response> {
   const response = await fetch(Base_URL, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: authHeaders(false),
     body: JSON.stringify(boards),
   });
   return response;
@@ -96,9 +87,7 @@ export async function useOnDragEndColumns(
 ): Promise<Response> {
   const response = await fetch(`${Base_URL}/ProjBoards/useondragcolumns`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: authHeaders(false),
     body: JSON.stringify({ mid, did }),
   });
   return response;
@@ -113,9 +102,8 @@ export async function useOnDragEndTaskSameColumn(
     `${Base_URL}/ProjBoards/useondragtasksamecolumn`,
     {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: authHeaders(false),
+
       body: JSON.stringify({ mid, did }),
     }
   );
@@ -131,9 +119,7 @@ export async function useOnDragEndTask(
 ): Promise<Response> {
   const response = await fetch(`${Base_URL}/ProjBoards/useondragtask`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: authHeaders(false),
     body: JSON.stringify({ cmid, cdid, mid, did }),
   });
   return response;
@@ -190,6 +176,7 @@ export async function AddBoard(
       addedby: addedby,
       addedbyid: addedbyid,
     };
+    console.log("📤 AddBoard payload:", newBoard);
     const fetchUrl = `${Base_URL}/ProjKanbanBoards/addboard`;
 
     const response = await axios.post(fetchUrl, newBoard, {
@@ -203,10 +190,12 @@ export async function AddBoard(
       data: response.data,
     };
     return customResponse;
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    return null; // Or any appropriate error handling
-  }
+  // kanbanApi.ts (in AddBoard catch)
+} catch (error: any) {
+  console.error("AddBoard failed:", error?.response?.data ?? error?.message);
+  return null;
+}
+
 }
 
 // Edit Board

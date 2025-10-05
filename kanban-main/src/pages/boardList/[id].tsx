@@ -8,7 +8,6 @@ import {
   EditBoard,
 } from "../../services/kanbanApi";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import Lottie from "lottie-react";
 import animation_space from "../../../public/animationTeam2.json";
 import animationSettings from "../../../public/animationNote.json";
@@ -157,7 +156,8 @@ export default function getBoardList() {
   };
 
   const handleAddBoardClick = async (newTitle: string) => {
-    const res = await AddBoard(newTitle, fkpoid, userInfo.userid, userInfo.username);
+    console.log("🧩 userInfo when adding board:", userInfo);
+    const res = await AddBoard(newTitle, fkpoid, userInfo.id, userInfo.username);
     if (res?.status !== 200 || !res?.data) {
       toast.error("Failed to add board.", { position: toast.POSITION.TOP_CENTER });
       return;

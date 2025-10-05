@@ -1,98 +1,54 @@
+import { login } from "@/services/auth";
 import { authTheUserId } from "@/services/kanbanApi";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import KanbanContext from "../../../context/kanbanContext";
-import { useContext } from "react";
-import LoadingConor from "@/components/layout/LoadingConor";
-
-// export const getServerSideProps: GetServerSideProps<{
-//   boardData: any[];
-// }> = async (context) => {
-//   try {
-
-//     // Retrieve the id from the query
-//     const {fkpoid, userid } = context.query;
-
-//     // Fetch data based on the id
-//     const res = await authTheUserId(fkpoid,userid);
-
-//     const boardData = res;
-
-//     return { props: { boardData } };
-//   } catch (error) {
-//     // Handle errors gracefully, you can log or display an error page
-//     console.error("Error in getServerSideProps:", error);
-
-//     // You can also redirect to an error page if needed
-//     return {
-//       redirect: {
-//         destination: "/error",
-//         permanent: false,
-//       },
-//     };
-//   }
-// };
-// Define a custom response type
-
-// interface CustomResponse<T> {
-//   status: number;
-//   data: T;
-// }
 
 export default function Auth() {
   const { handleSetUserInfo } = useContext(KanbanContext);
   const router = useRouter();
 
-  const { fkpoid, userid } = router.query as {
-    fkpoid: string | null;
-    userid: string | null;
-  };
+  const { fkpoid } = router.query as { fkpoid: string | null };
 
-  let fkpoidAsNumber: number | null = null;
-  let useridAsNumber: number | null = null;
-
-  if (fkpoid !== null && userid !== null) {
-    const parsedfkpoid = parseInt(fkpoid, 10); // Assuming base 10
-    const parseduserid = parseInt(userid, 10); // Assuming base 10
-    if (!isNaN(parsedfkpoid) && !isNaN(parseduserid)) {
-      fkpoidAsNumber = parsedfkpoid;
-      useridAsNumber = parseduserid;
-    }
-  }
-
-  //authentication
-  //const [response, setResponse] = useState<CustomResponse<any> | null>(null);
+  const fkpoidAsNumber =
+    fkpoid !== null && !isNaN(parseInt(fkpoid as string, 10))
+      ? parseInt(fkpoid as string, 10)
+      : null;
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (fkpoidAsNumber !== null && useridAsNumber !== null) {
-        const customResponse = await authTheUserId(
-          fkpoidAsNumber,
-          useridAsNumber
-        );
+    const run = async () => {
+      if (fkpoidAsNumber == null) return;
 
-        if (customResponse?.status != 200 || customResponse?.data == null) {
-          //setResponse(customResponse.data);
-          router.push("/unauthorized");
-          console.error("Error fetching data");
-        } else {
-          handleSetUserInfo(customResponse.data);
-          window.sessionStorage.setItem(
-            "userData",
-            JSON.stringify(customResponse.data)
-          );
-          router.push(`/boardList/${customResponse.data.fkpoid}`);
-        }
+      // 1) Login to mint the JWT (demo creds from README)
+      const loginRes = await login("admin@kanban.com", "admin123");
+
+      // backend README says login returns { success, data: { user, token } }
+      const loggedInUserId =
+        loginRes?.data?.user?.id ?? loginRes?.data?.data?.user?.id;
+
+      if (!loggedInUserId) {
+        console.error("No user id from login");
+        router.push("/unauthorized");
+        return;
       }
+
+      // 2) Use the id from login (NOT the id from the URL) for project access
+      const res = await authTheUserId(fkpoidAsNumber, Number(loggedInUserId));
+
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token || res?.status !== 200 || !res?.data) {
+        router.push("/unauthorized");
+        return;
+      }
+
+      // 3) Continue as before
+      handleSetUserInfo(res.data);
+      window.sessionStorage.setItem("userData", JSON.stringify(res.data));
+      router.push(`/boardList/${res.data.fkpoid}`);
     };
 
-    fetchData();
-  }, [fkpoidAsNumber, useridAsNumber]);
+    run();
+  }, [fkpoidAsNumber]);
 
-
-  return (
-    <>
-      <LoadingConor />
-    </>
-  );
+  return null;
 }
