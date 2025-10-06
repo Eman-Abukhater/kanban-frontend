@@ -1,12 +1,7 @@
-
-import { Inter } from "next/font/google";
-
-//mine
-const inter = Inter({ subsets: ["latin"] });
-
-
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 export default function Home() {
-
-    return <>No-Data Found </>
-  }
-
+  const r = useRouter();
+  useEffect(() => { r.replace("/auth/1/1"); }, [r]);
+  return null;
+}
