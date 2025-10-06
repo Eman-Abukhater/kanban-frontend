@@ -1,3 +1,4 @@
+export const getServerSideProps: GetServerSideProps = async () => ({ props: {} });
 import type { InferGetServerSidePropsType, GetServerSideProps } from "next";
 import { useState, useEffect, useMemo } from "react";
 import AddEditBoardModal from "../../components/modal/AddEditBoardModal";
@@ -8,18 +9,15 @@ import {
   EditBoard,
 } from "../../services/kanbanApi";
 import { ToastContainer, toast } from "react-toastify";
+import dynamic from 'next/dynamic';
+const LottieClient = dynamic(() => import('@/components/LottieClient'), { ssr: false });
 import animation_space from "../../../public/animationTeam2.json";
 import animationSettings from "../../../public/animationNote.json";
 import KanbanContext from "../../context/kanbanContext";
 import { useContext } from "react";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import LoadingPage2 from "@/components/layout/LoadingPage2";
-import dynamic from "next/dynamic";
-const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  return { props: {} };
-};
 export default function getBoardList() {
   const {
     userInfo,
@@ -181,7 +179,7 @@ export default function getBoardList() {
           <div className="flex items-center justify-center bg-gray-100" style={{ marginTop: "-13px" }}>
             <div className="w-full max-w-md space-y-4 p-4">
               <div className="flex items-center justify-center bg-gray-100" style={{ height: "273px" }}>
-                <Lottie animationData={animation_space} loop />
+              <LottieClient animationData={animation_space} loop />
               </div>
             </div>
           </div>
@@ -193,7 +191,7 @@ export default function getBoardList() {
                 style={{ position: "relative" }}
               >
                 <div className="flex items-center justify-center" style={{ width: "67px" }}>
-                  <Lottie animationData={animationSettings} loop />
+                <LottieClient animationData={animationSettings} loop />
                 </div>
                 <div className="btn-shine">
                   <span>Board P.O {fkpoid ?? ""}</span>
