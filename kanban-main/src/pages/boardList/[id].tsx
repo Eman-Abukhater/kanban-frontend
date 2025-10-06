@@ -8,14 +8,18 @@ import {
   EditBoard,
 } from "../../services/kanbanApi";
 import { ToastContainer, toast } from "react-toastify";
-import Lottie from "lottie-react";
 import animation_space from "../../../public/animationTeam2.json";
 import animationSettings from "../../../public/animationNote.json";
 import KanbanContext from "../../context/kanbanContext";
 import { useContext } from "react";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import LoadingPage2 from "@/components/layout/LoadingPage2";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
+export const getServerSideProps: GetServerSideProps = async () => {
+  return { props: {} };
+};
 export default function getBoardList() {
   const {
     userInfo,
