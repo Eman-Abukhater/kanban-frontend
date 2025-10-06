@@ -2,8 +2,16 @@
 const nextConfig = {
   reactStrictMode: false,
   images: {
-    domains: ["https://empoweringatt.ddns.net:4070"], // Add 'localhost' to the list of allowed domains
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'empoweringatt.ddns.net',
+        port: '4070',
+        pathname: '/**',
+      },
+    ],
   },
+  
 };
 
 module.exports = nextConfig;
