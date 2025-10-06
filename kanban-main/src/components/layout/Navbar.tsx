@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import ThemeSwitch from "./ThemeSwitch";
-import Lottie from "lottie-react";
+import dynamic from 'next/dynamic';
+const LottieClient = dynamic(() => import('@/components/LottieClient'), { ssr: false });
 import animationRocket from "../../../public/animationRocket.json";
 import animationBack from "../../../public/animationBack.json";
 import { useRouter } from "next/router";
@@ -63,7 +64,7 @@ export function Navbar(props: INavbarProps) {
                   width: "83px",
                 }}
               >
-                <Lottie animationData={animationRocket} loop={true} />
+                <LottieClient animationData={animationRocket} loop={true} />
               </div>
             </span>
             <span className="hidden md:inline">ESAP Task Board {userInfo?.fkboardid}: "{userInfo?.boardTitle}" </span>
@@ -87,7 +88,7 @@ export function Navbar(props: INavbarProps) {
                   width: '32px'
                 }}
               >
-                <Lottie animationData={animationBack} loop={true} />
+                <LottieClient animationData={animationBack} loop={true} />
               </div>
             </button>
             <ThemeSwitch
